@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Аполлинария Бакова](https://up.htmlacademy.ru/ecmascript/12/user/34471).
-* Наставник: `Неизвестно`.
+* Наставник: [Владимир Чебаков](https://htmlacademy.ru/profile/id1100789).
 
 ---
 
