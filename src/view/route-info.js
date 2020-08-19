@@ -1,4 +1,6 @@
-export const createRouteInfoTemplate = (point, dest) => {
+import {createElement} from "../utils.js";
+
+const createRouteInfoTemplate = (point, dest) => {
 
   const middle = () => {
     let middleText = `...`;
@@ -22,3 +24,27 @@ export const createRouteInfoTemplate = (point, dest) => {
     <p class="trip-info__dates">${point[0][1]} ${point[0][0]}&nbsp;&mdash;&nbsp;${point[point.length - 1][1]} ${point[point.length - 1][0]}</p>
   </div>`;
 };
+
+export default class RouteInfo {
+  constructor(point, dest) {
+    this._element = null;
+    this._point = point;
+    this._dest = dest;
+  }
+
+  getTemplate() {
+    return createRouteInfoTemplate(this._point, this._dest);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

@@ -1,3 +1,5 @@
+import {createElement} from "../utils.js";
+
 const createItemSorting = (item) => {
 
   return `<div class="trip-sort__item  trip-sort__item--${item.name.toLowerCase()}">
@@ -11,7 +13,7 @@ const createItemSorting = (item) => {
   </div>`;
 };
 
-export const createSortingTemplate = (sortingItems) => {
+const createSortingTemplate = (sortingItems) => {
 
   const sortingItemsTemplate = sortingItems
     .map((item, index) => createItemSorting(item, index === 0))
@@ -23,6 +25,28 @@ export const createSortingTemplate = (sortingItems) => {
     ${sortingItemsTemplate}
 
     <span class="trip-sort__item  trip-sort__item--offers">Offers</span>
-  </form>
-  <ul class="trip-days"></ul>`;
+  </form>`;
 };
+
+export default class Sorting {
+  constructor(items) {
+    this._element = null;
+    this._items = items;
+  }
+
+  getTemplate() {
+    return createSortingTemplate(this._items);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

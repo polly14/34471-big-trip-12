@@ -1,6 +1,7 @@
 import {humanizeDate} from "../utils.js";
+import {createElement} from "../utils.js";
 
-export const createRoutePointTemplate = (point) => {
+const createRoutePointTemplate = (point) => {
 
   const {pointType, destination, pointPrice, pointStartTime, pointTime} = point;
 
@@ -11,11 +12,14 @@ export const createRoutePointTemplate = (point) => {
 
   const startTime = humanizeDate(pointStartTime);
 
-  const endTime = () => {
-    const time = pointStartTime;
-    time.setMinutes(time.getMinutes() + pointTime);
-    return humanizeDate(time);
+  const getEndTime = () => {
+    const time = new Date(pointStartTime);
+    const copiedDate = new Date(time.getTime());
+    copiedDate.setMinutes(copiedDate.getMinutes() + pointTime);
+    return humanizeDate(copiedDate);
   };
+
+  const endTime = getEndTime();
 
   const duration = () => {
     let time = ``;
@@ -38,7 +42,7 @@ export const createRoutePointTemplate = (point) => {
         <p class="event__time">
           <time class="event__start-time" datetime="${startTime}">${startTime}</time>
           &mdash;
-          <time class="event__end-time" datetime="${endTime()}">${endTime()}</time>
+          <time class="event__end-time" datetime="${endTime}">${endTime}</time>
         </p>
         <p class="event__duration">${duration()}</p>
       </div>
@@ -58,3 +62,26 @@ export const createRoutePointTemplate = (point) => {
     </div>
   </li>`;
 };
+
+export default class RoutePoint {
+  constructor(point) {
+    this._element = null;
+    this._point = point;
+  }
+
+  getTemplate() {
+    return createRoutePointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
