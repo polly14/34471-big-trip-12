@@ -1,3 +1,5 @@
+import {createElement} from "../utils.js";
+
 let num = 0;
 const createItemDay = (point) => {
 
@@ -14,11 +16,34 @@ const createItemDay = (point) => {
     </li>`;
 };
 
-export const createDaysTemplate = (dayItems) => {
+const createDaysTemplate = (dayItems) => {
 
   const dayItemsTemplate = dayItems
     .map((point, index) => createItemDay(point, index === 0))
     .join(``);
 
-  return `${dayItemsTemplate}`;
+  return `<ul class="trip-days">${dayItemsTemplate}</ul>`;
 };
+
+export default class Days {
+  constructor(days) {
+    this._element = null;
+    this._days = days;
+  }
+
+  getTemplate() {
+    return createDaysTemplate(this._days);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

@@ -1,3 +1,5 @@
+import {createElement} from "../utils.js";
+
 const createItemFormDetails = (offer) => {
 
   const {offerName, offerPrice, counter} = offer;
@@ -12,7 +14,7 @@ const createItemFormDetails = (offer) => {
   </div>`;
 };
 
-export const createFormDetails = (detailItems) => {
+const createFormDetails = (detailItems) => {
   const detailItemsTemplate = detailItems
     .map((offer, index) => createItemFormDetails(offer, index === 0))
     .join(``);
@@ -27,3 +29,26 @@ export const createFormDetails = (detailItems) => {
     </section>
   </section>`;
 };
+
+export default class FormDetails {
+  constructor(offer) {
+    this._element = null;
+    this._offer = offer;
+  }
+
+  getTemplate() {
+    return createFormDetails(this._offer);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
