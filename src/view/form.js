@@ -1,5 +1,6 @@
 import {TYPES} from "../const.js";
 import {createElement, humanizeFull} from "../utils.js";
+import {getRandomInteger} from "../utils.js";
 
 const BLANK_POINT = {
   pointType: TYPES[0].type,
@@ -8,6 +9,11 @@ const BLANK_POINT = {
   pointPrice: 0,
   pointStartTime: ``,
   pointTime: 10,
+};
+const BLANK_OFFER = {
+  offerName: ``,
+  offerPrice: ``,
+  counter: ``
 };
 
 const createItemTypes = (item) => {
@@ -18,30 +24,51 @@ const createItemTypes = (item) => {
   </div>`;
 };
 
-const createFormTemplate = (items) => {
+const createPhotos = () => {
 
-  const {pointType, destination, pointPrice, pointStartTime, pointTime} = items;
+  const generatePhoto = () => {
+    const photoSrc = `http://picsum.photos/248/152?r=${Math.random()}`;
+    return photoSrc;
+  };
 
+  return `<img class="event__photo" src="${generatePhoto()}" alt="Event photo">`;
+};
+
+const createItemFormDetails = (offer) => {
+
+  const {offerName, offerPrice, counter, checkedOffer} = offer;
+  const isCheckedOffer = checkedOffer
+    ? `checked`
+    : ``;
+
+  return `<div class="event__offer-selector">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${counter}" type="checkbox" name="event-offer-luggage" ${isCheckedOffer}>
+    <label class="event__offer-label" for="event-offer-luggage-${counter}">
+      <span class="event__offer-title">${offerName}</span>
+      &plus;
+      &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
+    </label>
+  </div>`;
+};
+
+const createFormTemplate = (items, detailItems) => {
+
+  const {pointType, destination, destinationText, pointPrice, pointStartTime, pointTime} = items;
   const startTime = humanizeFull(pointStartTime);
-
   const getEndTime = () => {
     const time = new Date(pointStartTime);
     const copiedDate = new Date(time.getTime());
     copiedDate.setMinutes(copiedDate.getMinutes() + pointTime);
     return humanizeFull(copiedDate);
   };
-
   const endTime = getEndTime();
-
   const typeItemsTemplate = (g) => {
     const typeItems = TYPES.filter((item) => item.group === g)
       .map((item, index) => createItemTypes(item, index === 0))
       .join(``);
     return typeItems;
   };
-
   let pretext = ``;
-
   const typePretext = () => {
     if (pointType.group === `Transfer`) {
       pretext = `to`;
@@ -51,6 +78,13 @@ const createFormTemplate = (items) => {
     }
     return pretext;
   };
+  const detailItemsTemplate = detailItems
+    .map((offer, index) => createItemFormDetails(offer, index === 0))
+    .join(``);
+  const photoCount = new Array(getRandomInteger(3, 8)).fill();
+  const photoTemplate = photoCount
+    .map((item, index) => createPhotos(item, index === 0))
+    .join(``);
 
   return `<form class="trip-events__item  event  event--edit" action="#" method="post">
     <header class="event__header">
@@ -111,17 +145,37 @@ const createFormTemplate = (items) => {
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
+    <section class="event__details">
+      <section class="event__section  event__section--offers">
+        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+        <div class="event__available-offers">
+          ${detailItemsTemplate}
+        </div>
+      </section>
+      <section class="event__section  event__section--destination">
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+        <p class="event__destination-description">${destinationText}</p>
+
+        <div class="event__photos-container">
+          <div class="event__photos-tape">
+            ${photoTemplate}
+          </div>
+        </div>
+      </section>
+    </section>
   </form>`;
 };
 
 export default class Form {
-  constructor(items) {
+  constructor(items, offer) {
     this._element = null;
     this._items = items || BLANK_POINT;
+    this._offer = offer || BLANK_OFFER;
   }
 
   getTemplate() {
-    return createFormTemplate(this._items);
+    return createFormTemplate(this._items, this._offer);
   }
 
   getElement() {

@@ -1,20 +1,16 @@
 import {createElement} from "../utils.js";
 
-const createFormPhotos = (point) => {
-
-  const {destinationPhotos} = point;
-
-  return `<img class="event__photo" src="${destinationPhotos}" alt="Event photo">`;
+const createNoPointsTemplate = () => {
+  return `<p class="trip-events__msg">Click New Event to create your first point</p>`;
 };
 
-export default class FormPhotos {
-  constructor(point) {
+export default class NoPoints {
+  constructor() {
     this._element = null;
-    this._point = point;
   }
 
   getTemplate() {
-    return createFormPhotos(this._point);
+    return createNoPointsTemplate();
   }
 
   getElement() {

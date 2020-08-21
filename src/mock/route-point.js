@@ -10,7 +10,6 @@ const getRandomPointType = () => {
   };
 };
 
-
 const generateDestination = () => {
   const destinations = [
     `Amsterdam`,
