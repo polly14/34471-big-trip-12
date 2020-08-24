@@ -6,18 +6,14 @@ import SiteMenuView from "./view/site-menu.js";
 import FilterView from "./view/filters.js";
 import SortingView from "./view/sorting.js";
 import FormView from "./view/form.js";
-import FormDetailsView from "./view/form-details.js";
-import FormDestinationView from "./view/form-destination.js";
-import FormPhotosView from "./view/form-photos.js";
 import DaysView from "./view/day.js";
 import RoutePointView from "./view/route-point.js";
-import PointOffersView from "./view/point-offers.js";
 import PriceView from "./view/price.js";
 import RouteInfoView from "./view/route-info.js";
 import TripEventsMsgView from "./view/trip-events-msg.js";
+import NoPointsView from "./view/no-points.js";
 import {generateRoutePoint} from "./mock/route-point.js";
 import {generateOffers} from "./mock/point-offers.js";
-import {generatePhotos} from "./mock/form-photos.js";
 
 const POINTS_COUNT = 30;
 
@@ -48,88 +44,64 @@ for (let a = 0; a < points.length; a++) {
   rPoints.push(points[a].destination);
 }
 
-
-const renderPoint = (pointListElement, point) => {
-  const pointComponent = new RoutePointView(point);
-  const pointEditComponent = new FormView(point);
-
+const renderPoint = (pointListElement, point, offers) => {
+  const pointComponent = new RoutePointView(point, offers);
+  const pointEditComponent = new FormView(point, offers);
   const replaceCardToForm = () => {
     pointListElement.replaceChild(pointEditComponent.getElement(), pointComponent.getElement());
   };
-
   const replaceFormToCard = () => {
     pointListElement.replaceChild(pointComponent.getElement(), pointEditComponent.getElement());
   };
-
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
   pointComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
     replaceCardToForm();
-
-    const eventHeader = document.querySelector(`.event__header`);
-    let offerCount = getRandomInteger(2, 5);
-    let offers = new Array(offerCount).fill().map(generateOffers);
-    render(eventHeader, new FormDetailsView(offers).getElement(), RenderPosition.AFTEREND);
-
-    const eventDetails = document.querySelector(`.event__details`);
-    render(eventDetails, new FormDestinationView(points[0]).getElement(), RenderPosition.BEFOREEND);
-
-    const eventPhotosTape = document.querySelector(`.event__photos-tape`);
-    const photoCount = getRandomInteger(3, 8);
-    const photos = new Array(photoCount).fill().map(generatePhotos);
-    for (let i = 0; i < photos.length; i++) {
-      render(eventPhotosTape, new FormPhotosView(photos[i]).getElement(), RenderPosition.BEFOREEND);
-    }
-
+    document.addEventListener(`keydown`, onEscKeyDown);
   });
-
   pointEditComponent.getElement().addEventListener(`submit`, (evt) => {
     evt.preventDefault();
     replaceFormToCard();
+    document.removeEventListener(`keydown`, onEscKeyDown);
   });
-
   render(pointListElement, pointComponent.getElement(), RenderPosition.BEFOREEND);
 };
 
 const tripMain = document.querySelector(`.trip-main`);
 render(tripMain, new PriceView(points).getElement(), RenderPosition.AFTERBEGIN);
-
-const tripMainTripInfo = document.querySelector(`.trip-main__trip-info`);
-render(tripMainTripInfo, new RouteInfoView(allDaysNew, rPoints).getElement(), RenderPosition.AFTERBEGIN);
-
 const tripMainTripControlsTitles = document.querySelectorAll(`h2.visually-hidden`);
 render(tripMainTripControlsTitles[0], new SiteMenuView().getElement(), RenderPosition.AFTEREND);
-render(tripMainTripControlsTitles[1], new FilterView(FILTERS).getElement(), RenderPosition.AFTEREND);
-
 const tripEvents = document.querySelector(`.trip-events`);
+const tripMainTripInfo = document.querySelector(`.trip-main__trip-info`);
+render(tripMainTripControlsTitles[1], new FilterView(FILTERS).getElement(), RenderPosition.AFTEREND);
+render(tripMainTripInfo, new RouteInfoView(allDaysNew, rPoints).getElement(), RenderPosition.AFTERBEGIN);
 render(tripEvents, new SortingView(SORTING).getElement(), RenderPosition.BEFOREEND);
 
-const tripSort = document.querySelector(`.trip-sort`);
+const renderBoard = (boardContainer, boardPoints) => {
+  if (allDays.length === 0) {
+    render(boardContainer, new NoPointsView().getElement(), RenderPosition.BEFOREEND);
+    return;
+  }
+  const tripSort = document.querySelector(`.trip-sort`);
+  render(tripSort, new DaysView(allDaysNew).getElement(), RenderPosition.AFTEREND);
+  const tripEventsList = document.querySelectorAll(`.trip-events__list`);
 
-render(tripEvents, new TripEventsMsgView().getElement(), RenderPosition.BEFOREEND);
-
-render(tripSort, new DaysView(allDaysNew).getElement(), RenderPosition.AFTEREND);
-
-// const tripDays = document.querySelector(`.trip-days`);
-// render(tripDays, new FormView(points[0]).getElement(), RenderPosition.BEFOREBEGIN);
-
-
-const tripEventsList = document.querySelectorAll(`.trip-events__list`);
-
-for (let d = 0; d < allDays.length; d++) {
-  for (let i = 0; i < points.length; i++) {
-    if (allDays[d] === humanizeYearMonthDay(points[i].pointStartTime)) {
-      renderPoint(tripEventsList[d], points[i]);
+  for (let d = 0; d < allDays.length; d++) {
+    for (let i = 0; i < boardPoints.length; i++) {
+      let offerCount = getRandomInteger(2, 5);
+      let offers = new Array(offerCount).fill().map(generateOffers);
+      if (allDays[d] === humanizeYearMonthDay(boardPoints[i].pointStartTime)) {
+        renderPoint(tripEventsList[d], boardPoints[i], offers);
+      }
     }
   }
-}
+};
 
-const eventSelectedOffers = document.querySelectorAll(`.event__selected-offers`);
+renderBoard(tripEvents, points);
 
-for (let y = 0; y < eventSelectedOffers.length; y++) {
-
-  let offerCount = getRandomInteger(0, 3);
-  let offers = new Array(offerCount).fill().map(generateOffers);
-
-  for (let j = 0; j < offers.length; j++) {
-    render(eventSelectedOffers[y], new PointOffersView(offers[j]).getElement(), RenderPosition.BEFOREEND);
-  }
-}
+render(tripEvents, new TripEventsMsgView().getElement(), RenderPosition.BEFOREEND);

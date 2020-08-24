@@ -16,6 +16,9 @@ const prices = () => {
   return getRandomInteger(10, 100);
 };
 
+const checkedOffer = () => {
+  return Boolean(getRandomInteger(0, 1));
+};
 let num = 0;
 
 const counter = () => {
@@ -27,7 +30,7 @@ export const generateOffers = () => {
     offerName: offers(),
     offerPrice: prices(),
     counter: counter(),
-
+    checkedOffer: checkedOffer(),
   };
 
 };

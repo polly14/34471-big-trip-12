@@ -1,7 +1,26 @@
 import {humanizeDate} from "../utils.js";
 import {createElement} from "../utils.js";
 
-const createRoutePointTemplate = (point) => {
+const createPointOffersTemplate = (offer) => {
+
+  const {offerName, offerPrice} = offer;
+
+  return `<li class="event__offer">
+    <span class="event__offer-title">${offerName}</span>
+    &plus;
+    &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
+  </li>`;
+};
+
+const createRoutePointTemplate = (point, offer) => {
+
+  const offersTemplate = () => {
+    const offersChecked = offer.filter((item) => item.checkedOffer === true)
+      .splice(0, 3)
+      .map((item, index) => createPointOffersTemplate(item, index === 0))
+      .join(``);
+    return offersChecked;
+  };
 
   const {pointType, destination, pointPrice, pointStartTime, pointTime} = point;
 
@@ -53,7 +72,7 @@ const createRoutePointTemplate = (point) => {
 
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
-
+        ${offersTemplate()}
       </ul>
 
       <button class="event__rollup-btn" type="button">
@@ -64,13 +83,14 @@ const createRoutePointTemplate = (point) => {
 };
 
 export default class RoutePoint {
-  constructor(point) {
+  constructor(point, offer) {
     this._element = null;
     this._point = point;
+    this._offer = offer;
   }
 
   getTemplate() {
-    return createRoutePointTemplate(this._point);
+    return createRoutePointTemplate(this._point, this._offer);
   }
 
   getElement() {
