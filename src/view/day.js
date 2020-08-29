@@ -1,7 +1,7 @@
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 let num = 0;
-const createItemDay = (point) => {
+const createDayTemplate = (point) => {
 
   const counter = () => {
     return ++num;
@@ -12,38 +12,18 @@ const createItemDay = (point) => {
         <span class="day__counter">${counter()}</span>
         <time class="day__date" datetime="${point[2]}-${point[1]}-${point[0]}">${point[1]} ${point[0]}</time>
       </div>
-      <ul class="trip-events__list"></ul>
+
     </li>`;
 };
 
-const createDaysTemplate = (dayItems) => {
-
-  const dayItemsTemplate = dayItems
-    .map((point, index) => createItemDay(point, index === 0))
-    .join(``);
-
-  return `<ul class="trip-days">${dayItemsTemplate}</ul>`;
-};
-
-export default class Days {
-  constructor(days) {
-    this._element = null;
-    this._days = days;
+export default class Day extends AbstractView {
+  constructor(points) {
+    super();
+    this._points = points;
   }
 
   getTemplate() {
-    return createDaysTemplate(this._days);
+    return createDayTemplate(this._points);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
-  }
 }

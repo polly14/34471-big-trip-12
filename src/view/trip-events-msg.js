@@ -1,27 +1,13 @@
-import {createElement} from "../utils.js";
+import AbstractView from "./abstract.js";
 
 const createTripEventsMsgTemplate = () => {
   return `<p class="trip-events__msg">Loading...</p>`;
 };
 
-export default class TripEventsMsg {
-  constructor() {
-    this._element = null;
-  }
+export default class TripEventsMsg extends AbstractView {
 
   getTemplate() {
     return createTripEventsMsgTemplate();
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
-  }
 }
