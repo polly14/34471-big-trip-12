@@ -1,6 +1,6 @@
 import {TYPES} from "../const.js";
-import {getRandomInteger} from "../utils.js";
-import {shuffle} from "../utils.js";
+import {getRandomInteger} from "../utils/common.js";
+import {shuffle} from "../utils/common.js";
 
 const getRandomPointType = () => {
   const randomIndex = getRandomInteger(0, TYPES.length - 1);

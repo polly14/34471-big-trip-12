@@ -1,5 +1,5 @@
-import {humanizeDate} from "../utils.js";
-import {createElement} from "../utils.js";
+import {humanizeDate} from "../utils/point.js";
+import AbstractView from "./abstract.js";
 
 const createPointOffersTemplate = (offer) => {
 
@@ -82,26 +82,27 @@ const createRoutePointTemplate = (point, offer) => {
   </li>`;
 };
 
-export default class RoutePoint {
+export default class RoutePoint extends AbstractView {
   constructor(point, offer) {
-    this._element = null;
+    super();
     this._point = point;
     this._offer = offer;
+
+    this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   getTemplate() {
     return createRoutePointTemplate(this._point, this._offer);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._editClickHandler);
   }
+
 }

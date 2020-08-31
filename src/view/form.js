@@ -1,6 +1,7 @@
 import {TYPES} from "../const.js";
-import {createElement, humanizeFull} from "../utils.js";
-import {getRandomInteger} from "../utils.js";
+import AbstractView from "./abstract.js";
+import {humanizeFull} from "../utils/point.js";
+import {getRandomInteger} from "../utils/common.js";
 
 const BLANK_POINT = {
   pointType: TYPES[0].type,
@@ -167,26 +168,27 @@ const createFormTemplate = (items, detailItems) => {
   </form>`;
 };
 
-export default class Form {
+export default class Form extends AbstractView {
   constructor(items, offer) {
-    this._element = null;
+    super();
     this._items = items || BLANK_POINT;
     this._offer = offer || BLANK_OFFER;
+
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
   }
 
   getTemplate() {
     return createFormTemplate(this._items, this._offer);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
   }
 
-  removeElement() {
-    this._element = null;
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
   }
+
 }
