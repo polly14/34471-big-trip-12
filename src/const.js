@@ -41,17 +41,11 @@ export const TYPES = [
   }
 ];
 
-export const SORTING = [
-  {
-    name: `event`
-  },
-  {
-    name: `time`
-  },
-  {
-    name: `price`
-  }
-];
+export const SortType = {
+  DEFAULT: `event`,
+  TIME: `time`,
+  PRICE: `price`
+};
 
 export const FILTERS = [
   {
