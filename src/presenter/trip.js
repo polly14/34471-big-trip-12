@@ -138,7 +138,7 @@ export default class Trip {
   _renderPointsList() {
     const dayComponent = new DayView();
     render(this._daysComponent, dayComponent, RenderPosition.BEFOREEND);
-    const dayInfoComponent = new DayInfoView(0, this._allDays);
+    const dayInfoComponent = new DayInfoView(0, 0);
     render(dayComponent, dayInfoComponent, RenderPosition.BEFOREEND);
     dayInfoComponent.getElement().innerHTML = ``;
     const dayListComponent = new DayListView();

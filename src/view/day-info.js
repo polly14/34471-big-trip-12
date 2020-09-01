@@ -7,7 +7,7 @@ const createDayTemplate = (point, days) => {
     return ++num;
   };
 
-  if (num === days.length + 1) {
+  if (num >= days.length + 1) {
     num = 0;
   }
 
