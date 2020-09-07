@@ -1,17 +1,17 @@
 import {SortType} from "../const.js";
 import SortingView from "../view/sorting.js";
-import FormView from "../view/form.js";
 import DaysView from "../view/days.js";
 import DayView from "../view/day.js";
 import DayInfoView from "../view/day-info.js";
 import DayListView from "../view/day-list.js";
-import RoutePointView from "../view/route-point.js";
 import TripEventsMsgView from "../view/trip-events-msg.js";
 import NoPointsView from "../view/no-points.js";
 import {sortPointTimeChange, sortPointPriceChange} from "../utils/point.js";
 import {getRandomInteger} from "../utils/common.js";
+import {updateItem} from "../utils/common.js";
 import {humanizeYearMonthDay} from "../utils/point.js";
-import {render, RenderPosition, replace} from "../utils/render.js";
+import {render, RenderPosition} from "../utils/render.js";
+import PointPresenter from "./point.js";
 
 export default class Trip {
   constructor(boardContainer, allDays, allDaysNew, generateOffers) {
@@ -25,7 +25,8 @@ export default class Trip {
     this._generateOffers = generateOffers;
     this._sortComponent = new SortingView();
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
-
+    this._pointPresenter = {};
+    this._handlePointChange = this._handlePointChange.bind(this);
   }
 
   init(boardPoints) {
@@ -40,6 +41,12 @@ export default class Trip {
 
     render(this._boardContainer, this._daysComponent, RenderPosition.BEFOREEND);
     this._renderBoard();
+  }
+
+  _handlePointChange(updatedPoint) {
+    this._boardPoints = updateItem(this._boardPoints, updatedPoint);
+    this._sourcedBoardPoints = updateItem(this._sourcedBoardPoints, updatedPoint);
+    this._pointPresenter[updatedPoint.id].init(updatedPoint);
   }
 
   _sortPoints(sortType) {
@@ -80,30 +87,10 @@ export default class Trip {
   }
 
   _renderPoint(pointListElement, point, offers) {
-    const pointComponent = new RoutePointView(point, offers);
-    const pointEditComponent = new FormView(point, offers);
-    const replaceCardToForm = () => {
-      replace(pointEditComponent, pointComponent);
-    };
-    const replaceFormToCard = () => {
-      replace(pointComponent, pointEditComponent);
-    };
-    const onEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        evt.preventDefault();
-        replaceFormToCard();
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      }
-    };
-    pointComponent.setEditClickHandler(() => {
-      replaceCardToForm();
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
-    pointEditComponent.setFormSubmitHandler(() => {
-      replaceFormToCard();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-    render(pointListElement, pointComponent, RenderPosition.BEFOREEND);
+    const pointPresenter = new PointPresenter(pointListElement, this._handlePointChange);
+    pointPresenter.init(pointListElement, point, offers);
+    this._pointPresenter[point.id] = pointPresenter;
+
   }
 
   _renderDays() {
@@ -132,7 +119,11 @@ export default class Trip {
   }
 
   _clearPointsList() {
-    this._daysComponent.getElement().innerHTML = ``;
+    // this._daysComponent.getElement().innerHTML = ``;
+    Object
+      .values(this._pointPresenter)
+      .forEach((presenter) => presenter.destroy());
+    this._pointPresenter = {};
   }
 
   _renderPointsList() {

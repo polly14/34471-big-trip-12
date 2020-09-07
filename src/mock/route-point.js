@@ -2,6 +2,8 @@ import {TYPES} from "../const.js";
 import {getRandomInteger} from "../utils/common.js";
 import {shuffle} from "../utils/common.js";
 
+const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+
 const getRandomPointType = () => {
   const randomIndex = getRandomInteger(0, TYPES.length - 1);
   return {
@@ -53,5 +55,7 @@ export const generateRoutePoint = () => {
     pointPrice: generatePrice(),
     pointStartTime: generateStartDate(),
     pointTime: generateTime(),
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    id: generateId(),
   };
 };

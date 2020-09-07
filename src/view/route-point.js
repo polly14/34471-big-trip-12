@@ -87,8 +87,8 @@ export default class RoutePoint extends AbstractView {
     super();
     this._point = point;
     this._offer = offer;
-
     this._editClickHandler = this._editClickHandler.bind(this);
+
   }
 
   getTemplate() {
