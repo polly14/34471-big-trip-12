@@ -8,10 +8,10 @@ import TripEventsMsgView from "../view/trip-events-msg.js";
 import NoPointsView from "../view/no-points.js";
 import {sortPointTimeChange, sortPointPriceChange} from "../utils/point.js";
 import {getRandomInteger} from "../utils/common.js";
-import {updateItem} from "../utils/common.js";
 import {humanizeYearMonthDay} from "../utils/point.js";
-import {render, RenderPosition} from "../utils/render.js";
 import PointPresenter from "./point.js";
+import {render, RenderPosition} from "../utils/render.js";
+import {updateItem} from "../utils/common.js";
 
 export default class Trip {
   constructor(boardContainer, allDays, allDaysNew, generateOffers) {
@@ -43,10 +43,10 @@ export default class Trip {
     this._renderBoard();
   }
 
-  _handlePointChange(updatedPoint) {
+  _handlePointChange(pointListElement, updatedPoint, offers) {
     this._boardPoints = updateItem(this._boardPoints, updatedPoint);
     this._sourcedBoardPoints = updateItem(this._sourcedBoardPoints, updatedPoint);
-    this._pointPresenter[updatedPoint.id].init(updatedPoint);
+    this._pointPresenter[updatedPoint.id].init(pointListElement, updatedPoint, offers);
   }
 
   _sortPoints(sortType) {

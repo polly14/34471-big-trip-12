@@ -56,7 +56,6 @@ const createRoutePointTemplate = (point, offer) => {
         <img class="event__type-icon" width="42" height="42" src="img/icons/${pointType.type.toLowerCase()}.png" alt="Event type icon">
       </div>
       <h3 class="event__title">${pointType.type} ${pretext} ${destination}</h3>
-
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${startTime}">${startTime}</time>
@@ -65,16 +64,13 @@ const createRoutePointTemplate = (point, offer) => {
         </p>
         <p class="event__duration">${duration()}</p>
       </div>
-
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${pointPrice}</span>
       </p>
-
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
         ${offersTemplate()}
       </ul>
-
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
       </button>
@@ -87,8 +83,8 @@ export default class RoutePoint extends AbstractView {
     super();
     this._point = point;
     this._offer = offer;
-    this._editClickHandler = this._editClickHandler.bind(this);
 
+    this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   getTemplate() {

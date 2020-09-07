@@ -55,7 +55,7 @@ export const generateRoutePoint = () => {
     pointPrice: generatePrice(),
     pointStartTime: generateStartDate(),
     pointTime: generateTime(),
-    isFavorite: Boolean(getRandomInteger(0, 1)),
+    isFavorite: false,
     id: generateId(),
   };
 };
