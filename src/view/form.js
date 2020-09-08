@@ -183,6 +183,7 @@ export default class Form extends AbstractView {
     this._offer = offer || BLANK_OFFER;
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+
   }
 
   getTemplate() {
@@ -203,7 +204,7 @@ export default class Form extends AbstractView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this._items, this._offer);
   }
 
   setFormSubmitHandler(callback) {

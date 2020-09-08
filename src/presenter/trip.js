@@ -43,10 +43,11 @@ export default class Trip {
     this._renderBoard();
   }
 
-  _handlePointChange(pointListElement, updatedPoint, offers) {
+  _handlePointChange(updatedPoint, offers) {
     this._boardPoints = updateItem(this._boardPoints, updatedPoint);
     this._sourcedBoardPoints = updateItem(this._sourcedBoardPoints, updatedPoint);
-    this._pointPresenter[updatedPoint.id].init(pointListElement, updatedPoint, offers);
+    this._pointPresenter[updatedPoint.id].init(updatedPoint, offers);
+
   }
 
   _sortPoints(sortType) {
@@ -61,16 +62,13 @@ export default class Trip {
       default:
         this._boardPoints = this._sourcedBoardPoints.slice();
     }
-
     this._currentSortType = sortType;
   }
 
   _handleSortTypeChange(sortType) {
-
     if (this._currentSortType === sortType) {
       return;
     }
-
     this._sortPoints(sortType);
     this._clearPointsList();
     if (sortType === `event`) {
@@ -81,20 +79,17 @@ export default class Trip {
   }
 
   _renderSort() {
-
     render(this._boardContainer, this._sortComponent, RenderPosition.BEFOREEND);
     this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
   }
 
-  _renderPoint(pointListElement, point, offers) {
+  _renderPoint(point, offers, pointListElement) {
     const pointPresenter = new PointPresenter(pointListElement, this._handlePointChange);
-    pointPresenter.init(pointListElement, point, offers);
+    pointPresenter.init(point, offers);
     this._pointPresenter[point.id] = pointPresenter;
-
   }
 
   _renderDays() {
-
     this._allDays
       .slice(0, this._allDays.length)
       .forEach((everyDay) => {
@@ -112,18 +107,20 @@ export default class Trip {
           let offerCount = getRandomInteger(2, 5);
           let offers = new Array(offerCount).fill().map(this._generateOffers);
           if (everyDay === humanizeYearMonthDay(boardPoint.pointStartTime)) {
-            this._renderPoint(dayListComponent, boardPoint, offers);
+            this._renderPoint(boardPoint, offers, dayListComponent);
           }
         });
       });
   }
 
   _clearPointsList() {
-    // this._daysComponent.getElement().innerHTML = ``;
+
     Object
       .values(this._pointPresenter)
       .forEach((presenter) => presenter.destroy());
     this._pointPresenter = {};
+
+    this._daysComponent.getElement().innerHTML = ``;
   }
 
   _renderPointsList() {
@@ -139,7 +136,7 @@ export default class Trip {
     .forEach((boardPoint) => {
       let offerCount = getRandomInteger(2, 5);
       let offers = new Array(offerCount).fill().map(this._generateOffers);
-      this._renderPoint(dayListComponent, boardPoint, offers);
+      this._renderPoint(boardPoint, offers, dayListComponent);
     });
 
   }

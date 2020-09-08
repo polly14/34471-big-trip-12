@@ -14,14 +14,14 @@ export default class Point {
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init(pointListElement, point, offers) {
+  init(point, offers) {
     this._point = point;
-
+    this._offers = offers;
     const prevPointComponent = this._pointComponent;
     const prevPointEditComponent = this._pointEditComponent;
 
-    this._pointComponent = new RoutePointView(this._point, offers);
-    this._pointEditComponent = new FormView(this._point, offers);
+    this._pointComponent = new RoutePointView(this._point, this._offers);
+    this._pointEditComponent = new FormView(this._point, this._offers);
 
     this._pointComponent.setEditClickHandler(this._handleEditClick);
     this._pointEditComponent.setFormSubmitHandler(this._handleFormSubmit);
@@ -79,12 +79,12 @@ export default class Point {
             {
               isFavorite: !this._point.isFavorite
             }
-        )
+        ), this._offers
     );
   }
 
-  _handleFormSubmit(point) {
-    this._changeData(point);
+  _handleFormSubmit(point, offers) {
+    this._changeData(point, offers);
     this._replaceFormToCard();
   }
 }
