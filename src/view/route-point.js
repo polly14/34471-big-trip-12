@@ -1,33 +1,39 @@
 import {humanizeDate} from "../utils/point.js";
 import AbstractView from "./abstract.js";
 
-const createPointOffersTemplate = (offer) => {
+const createPointOffersTemplate = (item) => {
 
-  const {offerName, offerPrice} = offer;
+  const offerTitle = item.title;
+  const offerPrice = item.price;
 
   return `<li class="event__offer">
-    <span class="event__offer-title">${offerName}</span>
+    <span class="event__offer-title">${offerTitle}</span>
     &plus;
     &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
   </li>`;
 };
 
-const createRoutePointTemplate = (point, offer) => {
+const createRoutePointTemplate = (point) => {
+
+  const {offersList, pointType, destination, pointPrice, pointStartTime, pointTime} = point;
 
   const offersTemplate = () => {
-    const offersChecked = offer.filter((item) => item.checkedOffer === true)
+    const offersCheckedList = offersList.filter((item) => item.isOfferChecked === 1)
       .splice(0, 3)
       .map((item, index) => createPointOffersTemplate(item, index === 0))
       .join(``);
-    return offersChecked;
+    return offersCheckedList;
   };
 
-  const {pointType, destination, pointPrice, pointStartTime, pointTime} = point;
-
-  let pretext = `to`;
-  if (pointType.group === `Activity`) {
-    pretext = `in`;
-  }
+  let pretext = ``;
+  const typePretext = () => {
+    if (pointType === `Check-in` || pointType === `Sightseeing` || pointType === `Restaurant`) {
+      pretext = `in`;
+    } else {
+      pretext = `to`;
+    }
+    return pretext;
+  };
 
   const startTime = humanizeDate(pointStartTime);
 
@@ -53,9 +59,9 @@ const createRoutePointTemplate = (point, offer) => {
   return `<li class="trip-events__item">
     <div class="event">
       <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/${pointType.type.toLowerCase()}.png" alt="Event type icon">
+        <img class="event__type-icon" width="42" height="42" src="img/icons/${pointType.toLowerCase()}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${pointType.type} ${pretext} ${destination}</h3>
+      <h3 class="event__title">${pointType} ${typePretext()} ${destination}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${startTime}">${startTime}</time>
@@ -79,15 +85,15 @@ const createRoutePointTemplate = (point, offer) => {
 };
 
 export default class RoutePoint extends AbstractView {
-  constructor(point, offer) {
+  constructor(point) {
     super();
     this._point = point;
-    this._offer = offer;
+
     this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   getTemplate() {
-    return createRoutePointTemplate(this._point, this._offer);
+    return createRoutePointTemplate(this._point);
   }
 
   _editClickHandler(evt) {

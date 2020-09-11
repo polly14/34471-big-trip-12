@@ -1,32 +1,32 @@
-import {TYPES} from "../const.js";
+import {TYPES, DESTINATIONS, OFFERS} from "../const.js";
 import {getRandomInteger} from "../utils/common.js";
-import {shuffle} from "../utils/common.js";
+
+export const generateOffer = () => {
+  const randomOffer = OFFERS[getRandomInteger(0, OFFERS.length - 1)].offers;
+  const offersList = new Array(randomOffer.length).fill().map(() => ({title: randomOffer[getRandomInteger(0, randomOffer.length - 1)].title, price: getRandomInteger(10, 100), isOfferChecked: getRandomInteger(0, 1)}));
+  return offersList;
+};
 
 const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
 
 const getRandomPointType = () => {
-  const randomIndex = getRandomInteger(0, TYPES.length - 1);
-  return {
-    type: TYPES[randomIndex].type,
-    group: TYPES[randomIndex].group
-  };
+  const randomIndexTypes = getRandomInteger(0, TYPES.length - 1);
+  return TYPES[randomIndexTypes];
 };
 
 const generateDestination = () => {
-  const destinations = [
-    `Amsterdam`,
-    `Geneva`,
-    `Chamonix`
-  ];
-  const randomIndex = getRandomInteger(0, destinations.length - 1);
-  return destinations[randomIndex];
+  const randomIndexDest = getRandomInteger(0, DESTINATIONS.length - 1);
+  return DESTINATIONS[randomIndexDest].name;
 };
 
-const generateDestinationText = () => {
-  const text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`.split(`.`);
-  const randomIndex = getRandomInteger(1, 5);
-  const textBlock = shuffle(text).slice(0, randomIndex);
-  return `${textBlock.map((it) => `${it}`).join(``)}`;
+const generateDescription = () => {
+  const randomIndexDest = getRandomInteger(0, DESTINATIONS.length - 1);
+  return DESTINATIONS[randomIndexDest].description;
+};
+
+const generatePhotos = () => {
+  const randomIndexDest = getRandomInteger(0, DESTINATIONS.length - 1);
+  return DESTINATIONS[randomIndexDest].pictures;
 };
 
 const generatePrice = () => {
@@ -51,11 +51,13 @@ export const generateRoutePoint = () => {
   return {
     pointType: getRandomPointType(),
     destination: generateDestination(),
-    destinationText: generateDestinationText(),
+    description: generateDescription(),
+    photos: generatePhotos(),
     pointPrice: generatePrice(),
     pointStartTime: generateStartDate(),
     pointTime: generateTime(),
     isFavorite: false,
     id: generateId(),
+    offersList: generateOffer(),
   };
 };

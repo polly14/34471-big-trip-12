@@ -7,14 +7,13 @@ import DayListView from "../view/day-list.js";
 import TripEventsMsgView from "../view/trip-events-msg.js";
 import NoPointsView from "../view/no-points.js";
 import {sortPointTimeChange, sortPointPriceChange} from "../utils/point.js";
-import {getRandomInteger} from "../utils/common.js";
 import {humanizeYearMonthDay} from "../utils/point.js";
 import PointPresenter from "./point.js";
 import {render, RenderPosition} from "../utils/render.js";
 import {updateItem} from "../utils/common.js";
 
 export default class Trip {
-  constructor(boardContainer, allDays, allDaysNew, generateOffers) {
+  constructor(boardContainer, allDays, allDaysNew) {
     this._currentSortType = SortType.DEFAULT;
     this._boardContainer = boardContainer;
     this._daysComponent = new DaysView();
@@ -22,11 +21,11 @@ export default class Trip {
     this._noPointsComponent = new NoPointsView();
     this._allDays = allDays;
     this._allDaysNew = allDaysNew;
-    this._generateOffers = generateOffers;
     this._sortComponent = new SortingView();
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
     this._pointPresenter = {};
     this._handlePointChange = this._handlePointChange.bind(this);
+    this._handleModeChange = this._handleModeChange.bind(this);
   }
 
   init(boardPoints) {
@@ -34,7 +33,6 @@ export default class Trip {
     if (this._allDays.length !== 0) {
       this._renderSort();
     }
-
     this._boardPoints = boardPoints.slice();
 
     this._sourcedBoardPoints = boardPoints.slice();
@@ -43,10 +41,16 @@ export default class Trip {
     this._renderBoard();
   }
 
-  _handlePointChange(updatedPoint, offers) {
+  _handleModeChange() {
+    Object
+      .values(this._pointPresenter)
+      .forEach((presenter) => presenter.resetView());
+  }
+
+  _handlePointChange(updatedPoint) {
     this._boardPoints = updateItem(this._boardPoints, updatedPoint);
     this._sourcedBoardPoints = updateItem(this._sourcedBoardPoints, updatedPoint);
-    this._pointPresenter[updatedPoint.id].init(updatedPoint, offers);
+    this._pointPresenter[updatedPoint.id].init(updatedPoint);
 
   }
 
@@ -83,9 +87,9 @@ export default class Trip {
     this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
   }
 
-  _renderPoint(point, offers, pointListElement) {
-    const pointPresenter = new PointPresenter(pointListElement, this._handlePointChange);
-    pointPresenter.init(point, offers);
+  _renderPoint(point, pointListElement) {
+    const pointPresenter = new PointPresenter(pointListElement, this._handlePointChange, this._handleModeChange);
+    pointPresenter.init(point);
     this._pointPresenter[point.id] = pointPresenter;
   }
 
@@ -103,24 +107,21 @@ export default class Trip {
         this._boardPoints
         .slice(0, this._boardPoints.length)
         .forEach((boardPoint) => {
-
-          let offerCount = getRandomInteger(2, 5);
-          let offers = new Array(offerCount).fill().map(this._generateOffers);
           if (everyDay === humanizeYearMonthDay(boardPoint.pointStartTime)) {
-            this._renderPoint(boardPoint, offers, dayListComponent);
+            this._renderPoint(boardPoint, dayListComponent);
           }
         });
       });
   }
 
   _clearPointsList() {
-
     Object
       .values(this._pointPresenter)
       .forEach((presenter) => presenter.destroy());
     this._pointPresenter = {};
 
     this._daysComponent.getElement().innerHTML = ``;
+
   }
 
   _renderPointsList() {
@@ -134,9 +135,7 @@ export default class Trip {
     this._boardPoints
     .slice(0, this._boardPoints.length)
     .forEach((boardPoint) => {
-      let offerCount = getRandomInteger(2, 5);
-      let offers = new Array(offerCount).fill().map(this._generateOffers);
-      this._renderPoint(boardPoint, offers, dayListComponent);
+      this._renderPoint(boardPoint, dayListComponent);
     });
 
   }
