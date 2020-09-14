@@ -10,11 +10,12 @@ import PriceView from "./view/price.js";
 import RouteInfoView from "./view/route-info.js";
 
 import {generateRoutePoint} from "./mock/route-point.js";
-import {generateOffers} from "./mock/point-offers.js";
+
 
 const POINTS_COUNT = 30;
 
 const points = new Array(POINTS_COUNT).fill().map(generateRoutePoint);
+
 
 points.sort(function (a, b) {
   if (a.pointStartTime > b.pointStartTime) {
@@ -53,5 +54,5 @@ if (allDays.length !== 0) {
 
 const tripEvents = document.querySelector(`.trip-events`);
 
-const boardPresenter = new TripPresenter(tripEvents, allDays, allDaysNew, generateOffers);
+const boardPresenter = new TripPresenter(tripEvents, allDays, allDaysNew);
 boardPresenter.init(points);
