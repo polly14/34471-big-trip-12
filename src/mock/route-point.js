@@ -42,8 +42,13 @@ const generateStartDate = () => {
   return startDate;
 };
 
-const generateTime = () => {
-  return getRandomInteger(10, 240);
+const generateEndDate = () => {
+  const maxDaysGap = 7;
+  const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
+  const endDate = new Date();
+  endDate.setHours(getRandomInteger(0, 23), getRandomInteger(0, 59), 0, 999);
+  endDate.setDate(endDate.getDate() + daysGap);
+  return endDate;
 };
 
 export const generateRoutePoint = () => {
@@ -55,7 +60,7 @@ export const generateRoutePoint = () => {
     photos: generatePhotos(),
     pointPrice: generatePrice(),
     pointStartTime: generateStartDate(),
-    pointTime: generateTime(),
+    pointEndTime: generateEndDate(),
     isFavorite: false,
     id: generateId(),
     offersList: generateOffer(),

@@ -3,6 +3,9 @@ import SmartView from "./smart.js";
 import {humanizeFull} from "../utils/point.js";
 import {counter} from "../utils/common.js";
 import {generateOffer} from "../mock/route-point.js";
+import flatpickr from "flatpickr";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const BLANK_POINT = {
   pointType: TYPES[0],
@@ -11,7 +14,8 @@ const BLANK_POINT = {
   photos: ``,
   pointPrice: 0,
   pointStartTime: ``,
-  pointTime: 10,
+  pointTime: ``,
+  pointEndTime: ``,
   offersList: ``,
   isFavorite: false,
 };
@@ -58,16 +62,10 @@ const createItemFormDetails = (item) => {
 
 const createFormTemplate = (data) => {
 
-  const {offersList, pointType, destination, photos, pointPrice, pointStartTime, pointTime, isFavorite, id, isDestinationSelected} = data;
+  const {offersList, pointType, destination, photos, pointPrice, pointStartTime, pointEndTime, isFavorite, id, isDestinationSelected, isStartTimeSelected, isEndTimeSelected, isPointPrice} = data;
 
   const startTime = humanizeFull(pointStartTime);
-  const getEndTime = () => {
-    const time = new Date(pointStartTime);
-    const copiedDate = new Date(time.getTime());
-    copiedDate.setMinutes(copiedDate.getMinutes() + pointTime);
-    return humanizeFull(copiedDate);
-  };
-  const endTime = getEndTime();
+  const endTime = humanizeFull(pointEndTime);
 
   const typeItemsTemplate = (g) => {
     const typeItems = TYPES.filter((item) => TYPEGROUPS[TYPES.indexOf(item)].group === g)
@@ -117,6 +115,8 @@ const createFormTemplate = (data) => {
     </div>
   </section>`;
 
+  const isSubmitDisabled = (destination === null);
+
   return `<form class="trip-events__item  event  event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
@@ -149,21 +149,21 @@ const createFormTemplate = (data) => {
         <label class="visually-hidden" for="event-start-time-1">
           From
         </label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${isStartTimeSelected ? startTime : ``}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">
           To
         </label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${isEndTimeSelected ? endTime : ``}">
       </div>
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-1">
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${pointPrice}">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${isPointPrice ? pointPrice : ``}">
       </div>
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled ? `disabled` : ``}>Save</button>
       <button class="event__reset-btn" type="reset">Cancel</button>
       <input id="event-favorite-${id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
       <label class="event__favorite-btn" for="event-favorite-${id}">
@@ -187,14 +187,20 @@ export default class Form extends SmartView {
   constructor(items = BLANK_POINT) {
     super();
     this._data = Form.parsePointToData(items);
-
+    this._startDatepicker = null;
+    this._endDatepicker = null;
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
+    this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._editRollupHandler = this._editRollupHandler.bind(this);
     this._destinationToggleHandler = this._destinationToggleHandler.bind(this);
+    this._pointPriceToggleHandler = this._pointPriceToggleHandler.bind(this);
     this._typeToggleHandler = this._typeToggleHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setStartTimeDatepicker();
+    this._setEndTimeDatepicker();
   }
 
   reset(items) {
@@ -209,14 +215,79 @@ export default class Form extends SmartView {
 
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setStartTimeDatepicker();
+    this._setEndTimeDatepicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setEditRollupHandler(this._callback.editClick);
+  }
+
+  _setStartTimeDatepicker() {
+    if (this._startDatepicker) {
+      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
+      // которые создает flatpickr при инициализации
+      this._startDatepicker.destroy();
+      this._startDatepicker = null;
+    }
+
+    if (this._data.pointStartTime) {
+      // flatpickr есть смысл инициализировать только в случае,
+      // если поле выбора даты доступно для заполнения
+      this._startDatepicker = flatpickr(
+          this.getElement().querySelector(`#event-start-time-1`),
+          {
+            dateFormat: `d/m/y H:i`,
+            enableTime: true,
+            time24hr: true,
+            defaultDate: this._data.pointStartTime,
+            onChange: this._startTimeChangeHandler // На событие flatpickr передаём наш колбэк
+          }
+      );
+    }
+  }
+  _setEndTimeDatepicker() {
+    if (this._endDatepicker) {
+      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
+      // которые создает flatpickr при инициализации
+      this._endDatepicker.destroy();
+      this._endDatepicker = null;
+    }
+
+    if (this._data.pointEndTime) {
+      // flatpickr есть смысл инициализировать только в случае,
+      // если поле выбора даты доступно для заполнения
+      this._endDatepicker = flatpickr(
+          this.getElement().querySelector(`#event-end-time-1`),
+          {
+            dateFormat: `d/m/y H:i`,
+            enableTime: true,
+            time24hr: true,
+            minDate: this._data.pointStartTime,
+            defaultDate: this._data.pointEndTime,
+            onChange: this._endTimeChangeHandler // На событие flatpickr передаём наш колбэк
+          }
+      );
+    }
+  }
+
+  _startTimeChangeHandler([userDate]) {
+    this.updateData({
+      pointStartTime: userDate
+    }, true);
+  }
+
+  _endTimeChangeHandler([userDate]) {
+    this.updateData({
+      pointEndTime: userDate
+    }, true);
   }
 
   _setInnerHandlers() {
     this.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`input`, this._destinationToggleHandler);
+    this.getElement()
+      .querySelector(`.event__input--price`)
+      .addEventListener(`input`, this._pointPriceToggleHandler);
     this.getElement()
       .querySelector(`.event__type-list`)
       .addEventListener(`click`, this._typeToggleHandler);
@@ -225,7 +296,6 @@ export default class Form extends SmartView {
   _favoriteClickHandler(evt) {
     evt.preventDefault();
     this._callback.favoriteClick();
-
   }
 
   setFavoriteClickHandler(callback) {
@@ -240,6 +310,15 @@ export default class Form extends SmartView {
         destination: evt.target.value,
         description: generateNewDescription(evt.target.value)
       }, false);
+    }
+  }
+
+  _pointPriceToggleHandler(evt) {
+    if (evt.target.value) {
+      evt.preventDefault();
+      this.updateData({
+        pointPrice: evt.target.value,
+      }, true);
     }
   }
 
@@ -279,6 +358,9 @@ export default class Form extends SmartView {
         items,
         {
           isDestinationSelected: items.destination !== null,
+          isStartTimeSelected: items.pointStartTime !== null,
+          isEndTimeSelected: items.pointEndTime !== null,
+          isPointPrice: items.pointPrice !== null,
         }
     );
   }
@@ -288,7 +370,20 @@ export default class Form extends SmartView {
     if (!data.isDestinationSelected) {
       data.destination = null;
     }
+    if (!data.isStartTimeSelected) {
+      data.pointStartTime = null;
+    }
+    if (!data.isEndTimeSelected) {
+      data.pointEndTime = null;
+    }
+    if (!data.isPointPrice) {
+      data.pointPrice = null;
+    }
+
     delete data.isDestinationSelected;
+    delete data.isStartTimeSelected;
+    delete data.isEndTimeSelected;
+    delete data.isPointPrice;
 
     return data;
   }

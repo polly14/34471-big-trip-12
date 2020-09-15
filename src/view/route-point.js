@@ -1,4 +1,4 @@
-import {humanizeDate} from "../utils/point.js";
+import {humanizeDate, getDuration} from "../utils/point.js";
 import AbstractView from "./abstract.js";
 
 const createPointOffersTemplate = (item) => {
@@ -15,7 +15,7 @@ const createPointOffersTemplate = (item) => {
 
 const createRoutePointTemplate = (point) => {
 
-  const {offersList, pointType, destination, pointPrice, pointStartTime, pointTime} = point;
+  const {offersList, pointType, destination, pointPrice, pointStartTime, pointEndTime} = point;
 
   const offersTemplate = () => {
     const offersCheckedList = offersList.filter((item) => item.isOfferChecked === 1)
@@ -36,25 +36,8 @@ const createRoutePointTemplate = (point) => {
   };
 
   const startTime = humanizeDate(pointStartTime);
-
-  const getEndTime = () => {
-    const time = new Date(pointStartTime);
-    const copiedDate = new Date(time.getTime());
-    copiedDate.setMinutes(copiedDate.getMinutes() + pointTime);
-    return humanizeDate(copiedDate);
-  };
-
-  const endTime = getEndTime();
-
-  const duration = () => {
-    let time = ``;
-    if (pointTime >= 60) {
-      time = `${Math.floor(pointTime / 60)}H ${pointTime % 60}M`;
-    } else {
-      time = `${pointTime}M`;
-    }
-    return time;
-  };
+  const endTime = humanizeDate(pointEndTime);
+  const duration = getDuration(pointStartTime, pointEndTime);
 
   return `<li class="trip-events__item">
     <div class="event">
@@ -68,7 +51,7 @@ const createRoutePointTemplate = (point) => {
           &mdash;
           <time class="event__end-time" datetime="${endTime}">${endTime}</time>
         </p>
-        <p class="event__duration">${duration()}</p>
+        <p class="event__duration">${duration}</p>
       </div>
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${pointPrice}</span>
