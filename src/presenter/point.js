@@ -1,6 +1,8 @@
 import RoutePointView from "../view/route-point.js";
 import FormView from "../view/form.js";
 import {render, RenderPosition, replace, remove} from "../utils/render.js";
+import {UserAction, UpdateType} from "../const.js";
+import {isDatesEqual} from "../utils/point.js";
 
 const Mode = {
   DEFAULT: `DEFAULT`,
@@ -18,6 +20,7 @@ export default class Point {
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
     this._handleFormRollup = this._handleFormRollup.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
@@ -33,6 +36,7 @@ export default class Point {
 
     this._pointComponent.setEditClickHandler(this._handleEditClick);
     this._pointEditComponent.setFormSubmitHandler(this._handleFormSubmit);
+    this._pointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
     this._pointEditComponent.setEditRollupHandler(this._handleFormRollup);
     this._pointEditComponent.setFavoriteClickHandler(this._handleFavoriteClick);
 
@@ -91,6 +95,8 @@ export default class Point {
 
   _handleFavoriteClick() {
     this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
         Object.assign(
             {},
             this._point,
@@ -101,8 +107,26 @@ export default class Point {
     );
   }
 
-  _handleFormSubmit(point) {
-    this._changeData(point);
+  _handleFormSubmit(update) {
+    const isMinorUpdate =
+      !isDatesEqual(this._point.pointStartTime, update.pointStartTime) ||
+      !isDatesEqual(this._point.pointEndTime, update.pointEndTime) ||
+      this._point.pointPrice !== update.pointPrice;
+
+    this._changeData(
+        UserAction.UPDATE_POINT,
+        isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+        update
+    );
+    this._replaceFormToCard();
+  }
+
+  _handleDeleteClick(point) {
+    this._changeData(
+        UserAction.DELETE_POINT,
+        UpdateType.MINOR,
+        point
+    );
     this._replaceFormToCard();
   }
 

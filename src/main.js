@@ -1,21 +1,25 @@
 import {humanizeYearMonthDay} from "./utils/point.js";
 import {render, RenderPosition} from "./utils/render.js";
-import {FILTERS} from "./const.js";
 
 import TripPresenter from "./presenter/trip.js";
-
+import FilterPresenter from "./presenter/filter.js";
+import PointsModel from "./model/points.js";
+import FilterModel from "./model/filter.js";
 import SiteMenuView from "./view/site-menu.js";
-import FilterView from "./view/filters.js";
+
 import PriceView from "./view/price.js";
 import RouteInfoView from "./view/route-info.js";
 
 import {generateRoutePoint} from "./mock/route-point.js";
 
-
 const POINTS_COUNT = 30;
 
 const points = new Array(POINTS_COUNT).fill().map(generateRoutePoint);
 
+const pointsModel = new PointsModel();
+pointsModel.setPoints(points);
+
+const filterModel = new FilterModel();
 
 points.sort(function (a, b) {
   if (a.pointStartTime > b.pointStartTime) {
@@ -47,12 +51,21 @@ render(tripMain, new PriceView(points), RenderPosition.AFTERBEGIN);
 const tripMainTripControlsTitles = document.querySelectorAll(`h2.visually-hidden`);
 render(tripMainTripControlsTitles[0], new SiteMenuView(), RenderPosition.AFTEREND);
 const tripMainTripInfo = document.querySelector(`.trip-main__trip-info`);
-render(tripMainTripControlsTitles[1], new FilterView(FILTERS), RenderPosition.AFTEREND);
 if (allDays.length !== 0) {
   render(tripMainTripInfo, new RouteInfoView(allDaysNew, rPoints), RenderPosition.AFTERBEGIN);
 }
 
 const tripEvents = document.querySelector(`.trip-events`);
 
-const boardPresenter = new TripPresenter(tripEvents, allDays, allDaysNew);
-boardPresenter.init(points);
+const boardPresenter = new TripPresenter(tripEvents, pointsModel, filterModel);
+
+const filterPresenter = new FilterPresenter(tripMainTripControlsTitles[1], filterModel, pointsModel);
+
+filterPresenter.init();
+
+boardPresenter.init();
+
+document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
+  evt.preventDefault();
+  boardPresenter.createPoint();
+});

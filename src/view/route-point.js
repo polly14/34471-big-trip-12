@@ -35,10 +35,6 @@ const createRoutePointTemplate = (point) => {
     return pretext;
   };
 
-  const startTime = humanizeDate(pointStartTime);
-  const endTime = humanizeDate(pointEndTime);
-  const duration = getDuration(pointStartTime, pointEndTime);
-
   return `<li class="trip-events__item">
     <div class="event">
       <div class="event__type">
@@ -47,11 +43,11 @@ const createRoutePointTemplate = (point) => {
       <h3 class="event__title">${pointType} ${typePretext()} ${destination}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${startTime}">${startTime}</time>
+          <time class="event__start-time" datetime="${humanizeDate(pointStartTime)}">${humanizeDate(pointStartTime)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${endTime}">${endTime}</time>
+          <time class="event__end-time" datetime="${humanizeDate(pointEndTime)}">${humanizeDate(pointEndTime)}</time>
         </p>
-        <p class="event__duration">${duration}</p>
+        <p class="event__duration">${getDuration(pointStartTime, pointEndTime)}</p>
       </div>
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${pointPrice}</span>

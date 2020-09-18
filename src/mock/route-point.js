@@ -7,7 +7,7 @@ export const generateOffer = () => {
   return offersList;
 };
 
-const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+export const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
 
 const getRandomPointType = () => {
   const randomIndexTypes = getRandomInteger(0, TYPES.length - 1);

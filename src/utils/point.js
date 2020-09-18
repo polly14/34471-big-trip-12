@@ -6,6 +6,20 @@ export const getCurrentDate = () => {
   return currentDate;
 };
 
+export const isDatePast = (date) => {
+  if (date > getCurrentDate()) {
+    return true;
+  }
+  return false;
+};
+export const isDateFuture = (date) => {
+  if (date < getCurrentDate()) {
+    return true;
+  }
+  return false;
+};
+
+
 export const humanizeDate = (dueDate) => {
   return dueDate.toLocaleString(`en-GB`, {hour: `numeric`, minute: `numeric`});
 };
@@ -39,23 +53,25 @@ export const formatHumanizeFull = (dueDate) => {
   return moment(dueDate).format(`YY MM DD HH:mm`);
 };
 
-export const getDuration = (startTime, endTime) => {
-  const dateB = moment(endTime);
-  const dateC = moment(startTime);
-  const duration = dateB.diff(dateC);
-  if (duration > 1440) {
-    return moment(duration).format(`DD[D] HH[H] mm[M]`);
-  }
-  if (duration > 60) {
-    return moment(duration).format(`HH[H] mm[M]`);
+export const getDuration = (dateB, dateC) => {
+
+  const b = moment(dateB);
+  const a = moment(dateC);
+
+  const minut = a.diff(b, `minutes`);
+  const hours = a.diff(b, `hours`);
+  const days = a.diff(b, `days`);
+
+  if (days > 0) {
+    return `${days}D ${hours - (days * 24)}H ${minut - (hours * 60)}M`;
+  } else if (hours > 0) {
+    return `${hours - (days * 24)}H ${minut - (hours * 60)}M`;
   } else {
-    return moment(duration).format(`mm[M]`);
+    return `${minut - (hours * 60)}M`;
   }
 
 };
 
-// Функция помещает задачи без даты в конце списка,
-// возвращая нужный вес для колбэка sort
 const getWeightForNullDate = (dateA, dateB) => {
   if (dateA === null && dateB === null) {
     return 0;
@@ -72,14 +88,30 @@ const getWeightForNullDate = (dateA, dateB) => {
   return null;
 };
 
+export const sortDefault = (a, b) => {
+
+  if (a.pointStartTime > b.pointStartTime) {
+    return 1;
+  }
+  if (a.pointStartTime < b.pointStartTime) {
+    return -1;
+  }
+  return 0;
+
+};
+
 export const sortPointTimeChange = (taskA, taskB) => {
-  const weight = getWeightForNullDate(taskA.pointTime, taskB.pointTime);
+
+  taskA.duration = moment(taskA.pointStartTime).diff(moment(taskA.pointEndTime));
+  taskB.duration = moment(taskB.pointStartTime).diff(moment(taskB.pointEndTime));
+
+  const weight = getWeightForNullDate(taskA.duration, taskB.duration);
 
   if (weight !== null) {
     return weight;
   }
 
-  return taskB.pointTime - taskA.pointTime;
+  return taskA.duration - taskB.duration;
 };
 
 export const sortPointPriceChange = (taskA, taskB) => {
@@ -90,4 +122,12 @@ export const sortPointPriceChange = (taskA, taskB) => {
   }
 
   return taskB.pointPrice - taskA.pointPrice;
+};
+
+export const isDatesEqual = (dateA, dateB) => {
+  if (dateA === null && dateB === null) {
+    return true;
+  }
+
+  return moment(dateA).isSame(dateB, `day`);
 };

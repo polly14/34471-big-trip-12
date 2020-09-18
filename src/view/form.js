@@ -5,7 +5,7 @@ import {counter} from "../utils/common.js";
 import {generateOffer} from "../mock/route-point.js";
 import flatpickr from "flatpickr";
 
-import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+import "flatpickr/dist/flatpickr.min.css";
 
 const BLANK_POINT = {
   pointType: TYPES[0],
@@ -64,9 +64,6 @@ const createFormTemplate = (data) => {
 
   const {offersList, pointType, destination, photos, pointPrice, pointStartTime, pointEndTime, isFavorite, id, isDestinationSelected, isStartTimeSelected, isEndTimeSelected, isPointPrice} = data;
 
-  const startTime = humanizeFull(pointStartTime);
-  const endTime = humanizeFull(pointEndTime);
-
   const typeItemsTemplate = (g) => {
     const typeItems = TYPES.filter((item) => TYPEGROUPS[TYPES.indexOf(item)].group === g)
       .map((item, index) => createItemTypes(item, index === 0))
@@ -107,7 +104,7 @@ const createFormTemplate = (data) => {
 
   const descriptionTemplate = `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${generateNewDescription(destination)}</p>
+    <p class="event__destination-description">${isDestinationSelected ? generateNewDescription(destination) : ``}</p>
     <div class="event__photos-container">
       <div class="event__photos-tape">
         ${photoTemplate}
@@ -140,7 +137,7 @@ const createFormTemplate = (data) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${pointType} ${typePretext()}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${isDestinationSelected ? destination : ``}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
         <datalist id="destination-list-1">
           ${destListTemplate()}
         </datalist>
@@ -149,12 +146,12 @@ const createFormTemplate = (data) => {
         <label class="visually-hidden" for="event-start-time-1">
           From
         </label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${isStartTimeSelected ? startTime : ``}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${isStartTimeSelected ? humanizeFull(pointStartTime) : ``}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">
           To
         </label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${isEndTimeSelected ? endTime : ``}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${isEndTimeSelected ? humanizeFull(pointEndTime) : ``}">
       </div>
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-1">
@@ -193,6 +190,7 @@ export default class Form extends SmartView {
     this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
     this._editRollupHandler = this._editRollupHandler.bind(this);
     this._destinationToggleHandler = this._destinationToggleHandler.bind(this);
     this._pointPriceToggleHandler = this._pointPriceToggleHandler.bind(this);
@@ -201,6 +199,15 @@ export default class Form extends SmartView {
     this._setInnerHandlers();
     this._setStartTimeDatepicker();
     this._setEndTimeDatepicker();
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._datepicker) {
+      this._datepicker.destroy();
+      this._datepicker = null;
+    }
   }
 
   reset(items) {
@@ -219,19 +226,18 @@ export default class Form extends SmartView {
     this._setEndTimeDatepicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setEditRollupHandler(this._callback.editClick);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   _setStartTimeDatepicker() {
     if (this._startDatepicker) {
-      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
-      // которые создает flatpickr при инициализации
+
       this._startDatepicker.destroy();
       this._startDatepicker = null;
     }
 
     if (this._data.pointStartTime) {
-      // flatpickr есть смысл инициализировать только в случае,
-      // если поле выбора даты доступно для заполнения
+
       this._startDatepicker = flatpickr(
           this.getElement().querySelector(`#event-start-time-1`),
           {
@@ -246,15 +252,13 @@ export default class Form extends SmartView {
   }
   _setEndTimeDatepicker() {
     if (this._endDatepicker) {
-      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
-      // которые создает flatpickr при инициализации
+
       this._endDatepicker.destroy();
       this._endDatepicker = null;
     }
 
     if (this._data.pointEndTime) {
-      // flatpickr есть смысл инициализировать только в случае,
-      // если поле выбора даты доступно для заполнения
+
       this._endDatepicker = flatpickr(
           this.getElement().querySelector(`#event-end-time-1`),
           {
@@ -272,13 +276,13 @@ export default class Form extends SmartView {
   _startTimeChangeHandler([userDate]) {
     this.updateData({
       pointStartTime: userDate
-    }, true);
+    }, false);
   }
 
   _endTimeChangeHandler([userDate]) {
     this.updateData({
       pointEndTime: userDate
-    }, true);
+    }, false);
   }
 
   _setInnerHandlers() {
@@ -350,6 +354,16 @@ export default class Form extends SmartView {
   setEditRollupHandler(callback) {
     this._callback.editClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._editRollupHandler);
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(Form.parseDataToPoint(this._data));
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 
   static parsePointToData(items) {

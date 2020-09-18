@@ -1,18 +1,23 @@
 import AbstractView from "./abstract.js";
 
-const createItemFilter = (item) => {
+const createItemFilter = (filter, currentFilterType) => {
+
+  const {type, name, count} = filter;
 
   return `<div class="trip-filters__filter">
-    <input id="filter-${item.name.toLowerCase()}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${item.name.toLowerCase()}">
-    <label class="trip-filters__filter-label" for="filter-${item.name.toLowerCase()}">${item.name}</label>
+    <input id="filter__${name}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" 
+      ${type === currentFilterType ? `checked` : ``}
+      ${count === 0 ? `disabled` : ``}
+      value="${type}"
+">
+    <label class="trip-filters__filter-label" for="filter__${name}">${name}</label>
   </div>`;
 };
 
-
-const createFilterTemplate = (filterItems) => {
+const createFilterTemplate = (filterItems, currentFilterType) => {
 
   const filterItemsTemplate = filterItems
-    .map((item, index) => createItemFilter(item, index === 0))
+    .map((filter) => createItemFilter(filter, currentFilterType))
     .join(``);
 
   return `<form class="trip-filters" action="#" method="get">
@@ -22,13 +27,25 @@ const createFilterTemplate = (filterItems) => {
 };
 
 export default class Filter extends AbstractView {
-  constructor(items) {
+  constructor(filters, currentFilterType) {
     super();
-    this._items = items;
+    this._filters = filters;
+    this._currentFilter = currentFilterType;
+
+    this._filterTypeChangeHandler = this._filterTypeChangeHandler.bind(this);
   }
 
   getTemplate() {
-    return createFilterTemplate(this._items);
+    return createFilterTemplate(this._filters, this._currentFilter);
   }
 
+  _filterTypeChangeHandler(evt) {
+    evt.preventDefault();
+    this._callback.filterTypeChange(evt.target.value);
+  }
+
+  setFilterTypeChangeHandler(callback) {
+    this._callback.filterTypeChange = callback;
+    this.getElement().addEventListener(`change`, this._filterTypeChangeHandler);
+  }
 }
