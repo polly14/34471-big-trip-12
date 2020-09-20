@@ -1,5 +1,6 @@
 import {humanizeDate, getDuration} from "../utils/point.js";
 import AbstractView from "./abstract.js";
+import he from "he";
 
 const createPointOffersTemplate = (item) => {
 
@@ -40,7 +41,7 @@ const createRoutePointTemplate = (point) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${pointType.toLowerCase()}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${pointType} ${typePretext()} ${destination}</h3>
+      <h3 class="event__title">${pointType} ${typePretext()} ${he.encode(destination)}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${humanizeDate(pointStartTime)}">${humanizeDate(pointStartTime)}</time>

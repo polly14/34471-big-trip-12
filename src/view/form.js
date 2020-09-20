@@ -1,9 +1,10 @@
 import {TYPES, TYPEGROUPS, DESTINATIONS} from "../const.js";
 import SmartView from "./smart.js";
-import {humanizeFull} from "../utils/point.js";
+import {humanizeFull, getCurrentDate} from "../utils/point.js";
 import {counter} from "../utils/common.js";
-import {generateOffer} from "../mock/route-point.js";
+import {generateOffer, generatePhotos} from "../mock/route-point.js";
 import flatpickr from "flatpickr";
+import he from "he";
 
 import "flatpickr/dist/flatpickr.min.css";
 
@@ -13,10 +14,9 @@ const BLANK_POINT = {
   description: ``,
   photos: ``,
   pointPrice: 0,
-  pointStartTime: ``,
-  pointTime: ``,
-  pointEndTime: ``,
-  offersList: ``,
+  pointStartTime: getCurrentDate(),
+  pointEndTime: getCurrentDate(),
+  offersList: generateOffer(),
   isFavorite: false,
 };
 
@@ -26,7 +26,7 @@ const generateNewDescription = (item) => {
       return DESTINATIONS[i].description;
     }
   }
-  return DESTINATIONS[0].description;
+  return ``;
 };
 
 const createItemTypes = (item) => {
@@ -60,9 +60,9 @@ const createItemFormDetails = (item) => {
   </div>`;
 };
 
-const createFormTemplate = (data) => {
+const createFormTemplate = (data, isNewPoint) => {
 
-  const {offersList, pointType, destination, photos, pointPrice, pointStartTime, pointEndTime, isFavorite, id, isDestinationSelected, isStartTimeSelected, isEndTimeSelected, isPointPrice} = data;
+  const {offersList, pointType, destination, photos, pointPrice, pointStartTime, pointEndTime, isFavorite, id, isStartTimeSelected, isEndTimeSelected, isPointPrice} = data;
 
   const typeItemsTemplate = (g) => {
     const typeItems = TYPES.filter((item) => TYPEGROUPS[TYPES.indexOf(item)].group === g)
@@ -91,20 +91,20 @@ const createFormTemplate = (data) => {
   const detailItemsTemplate = `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
     <div class="event__available-offers">
-      ${offersList
+      ${offersList && offersList
         .map((item, index) => createItemFormDetails(item, index === 0))
         .join(``)}
      </div>
   </section>`;
 
-  const pointPhotos = photos;
+  const pointPhotos = photos || [];
   const photoTemplate = pointPhotos
     .map((item, index) => createPhotos(item, index === 0))
     .join(``);
 
   const descriptionTemplate = `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${isDestinationSelected ? generateNewDescription(destination) : ``}</p>
+    <p class="event__destination-description">${generateNewDescription(destination)}</p>
     <div class="event__photos-container">
       <div class="event__photos-tape">
         ${photoTemplate}
@@ -112,7 +112,7 @@ const createFormTemplate = (data) => {
     </div>
   </section>`;
 
-  const isSubmitDisabled = (destination === null);
+  const isSubmitDisabled = (destination === ``);
 
   return `<form class="trip-events__item  event  event--edit" action="#" method="post">
     <header class="event__header">
@@ -137,7 +137,7 @@ const createFormTemplate = (data) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${pointType} ${typePretext()}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination)}" list="destination-list-1">
         <datalist id="destination-list-1">
           ${destListTemplate()}
         </datalist>
@@ -161,7 +161,7 @@ const createFormTemplate = (data) => {
         <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${isPointPrice ? pointPrice : ``}">
       </div>
       <button class="event__save-btn  btn  btn--blue" type="submit" ${isSubmitDisabled ? `disabled` : ``}>Save</button>
-      <button class="event__reset-btn" type="reset">Cancel</button>
+      <button class="event__reset-btn" type="reset">${isNewPoint ? `Cancel` : `Delete`}</button>
       <input id="event-favorite-${id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
       <label class="event__favorite-btn" for="event-favorite-${id}">
         <span class="visually-hidden">Add to favorite</span>
@@ -175,15 +175,16 @@ const createFormTemplate = (data) => {
     </header>
     <section class="event__details">
       ${detailItemsTemplate}
-      ${isDestinationSelected ? descriptionTemplate : ``}
+      ${isSubmitDisabled ? `` : descriptionTemplate}
     </section>
   </form>`;
 };
 
 export default class Form extends SmartView {
-  constructor(items = BLANK_POINT) {
+  constructor(items = BLANK_POINT, isNewPoint) {
     super();
     this._data = Form.parsePointToData(items);
+    this._isNewPoint = isNewPoint;
     this._startDatepicker = null;
     this._endDatepicker = null;
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
@@ -217,7 +218,7 @@ export default class Form extends SmartView {
   }
 
   getTemplate() {
-    return createFormTemplate(this._data);
+    return createFormTemplate(this._data, this._isNewPoint);
   }
 
   restoreHandlers() {
@@ -312,6 +313,7 @@ export default class Form extends SmartView {
       evt.preventDefault();
       this.updateData({
         destination: evt.target.value,
+        photos: generatePhotos(),
         description: generateNewDescription(evt.target.value)
       }, false);
     }
@@ -371,7 +373,6 @@ export default class Form extends SmartView {
         {},
         items,
         {
-          isDestinationSelected: items.destination !== null,
           isStartTimeSelected: items.pointStartTime !== null,
           isEndTimeSelected: items.pointEndTime !== null,
           isPointPrice: items.pointPrice !== null,
@@ -381,9 +382,6 @@ export default class Form extends SmartView {
 
   static parseDataToPoint(data) {
     data = Object.assign({}, data);
-    if (!data.isDestinationSelected) {
-      data.destination = null;
-    }
     if (!data.isStartTimeSelected) {
       data.pointStartTime = null;
     }
@@ -394,7 +392,6 @@ export default class Form extends SmartView {
       data.pointPrice = null;
     }
 
-    delete data.isDestinationSelected;
     delete data.isStartTimeSelected;
     delete data.isEndTimeSelected;
     delete data.isPointPrice;

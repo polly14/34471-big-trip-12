@@ -24,7 +24,7 @@ const generateDescription = () => {
   return DESTINATIONS[randomIndexDest].description;
 };
 
-const generatePhotos = () => {
+export const generatePhotos = () => {
   const randomIndexDest = getRandomInteger(0, DESTINATIONS.length - 1);
   return DESTINATIONS[randomIndexDest].pictures;
 };

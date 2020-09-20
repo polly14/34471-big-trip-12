@@ -22,7 +22,7 @@ export default class PointNew {
       return;
     }
 
-    this._pointEditComponent = new FormView(this._point);
+    this._pointEditComponent = new FormView(this._point, true);
     this._pointEditComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._pointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
