@@ -3,7 +3,7 @@ import {getRandomInteger} from "../utils/common.js";
 
 export const generateOffer = () => {
   const randomOffer = OFFERS[getRandomInteger(0, OFFERS.length - 1)].offers;
-  const offersList = new Array(randomOffer.length).fill().map(() => ({title: randomOffer[getRandomInteger(0, randomOffer.length - 1)].title, price: getRandomInteger(10, 100), isOfferChecked: getRandomInteger(0, 1)}));
+  const offersList = new Array(randomOffer.length).fill().map(() => ({title: randomOffer[getRandomInteger(0, randomOffer.length - 1)].title, price: getRandomInteger(10, 100), isOfferChecked: 1}));
   return offersList;
 };
 

@@ -38,13 +38,6 @@ export default class Trip {
   }
 
   init() {
-    const points = this._getPoints();
-    const pointCount = points.length;
-
-
-    if (pointCount !== 0) {
-      this._renderSort();
-    }
 
     render(this._boardContainer, this._daysComponent, RenderPosition.BEFOREEND);
     this._renderBoard();
@@ -157,6 +150,7 @@ export default class Trip {
     this._dayListPresenter.forEach((dayListComponent) => remove(dayListComponent));
     this._dayListPresenter = [];
     remove(this._noPointsComponent);
+    remove(this._sortComponent);
     if (resetSortType) {
       this._currentSortType = SortType.DEFAULT;
     }
@@ -171,6 +165,9 @@ export default class Trip {
   }
 
   _renderListWithoutDays() {
+
+    this._renderSort();
+
     const points = this._getPoints();
     const dayInfoComponent = new DayInfoView(0, 0);
     const dayComponent = new DayView();
@@ -190,6 +187,9 @@ export default class Trip {
   _renderBoard() {
     const points = this._getPoints();
     const pointCount = points.length;
+    if (pointCount !== 0) {
+      this._renderSort();
+    }
     if (pointCount === 0) {
       this._renderNoPoints();
       return;
